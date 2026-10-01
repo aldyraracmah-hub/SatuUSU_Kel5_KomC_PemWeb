@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SATU USU — Login</title>
+<style>
+  :root{
+    --green:#1a6b43;
+    --green-dark:#145435;
+    --orange:#f2a51c;
+    --ink:#1f2328;
+    --muted:#6b7280;
+    --border:#d8dbe0;
+    --error-bg:#fdecec;
+    --error-bd:#e85b5b;
+    --error-tx:#c0392b;
+    --ok-bg:#e6f4ec;
+    --ok-tx:#1a6b43;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+  }
+
+  .stage{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+  }
+  .bg{
+    position:absolute;
+    inset:0;
+    background-image:url('images/Foto-koridor.jpeg');
+    background-size:cover;
+    background-position:center;
+  }
+  .bg::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg, rgba(10,20,15,.6) 0%, rgba(10,20,15,.25) 45%, rgba(10,20,15,.05) 65%);
+  }
+
+  .layout{
+    position:relative;
+    z-index:1;
+    display:flex;
+    width:100%;
+    min-height:100vh;
+    align-items:center;
+  }
+
+  .copy{
+    flex:1;
+    padding:48px clamp(24px,6vw,96px);
+    color:#fff;
+    max-width:620px;
+  }
+  .copy h1{
+    font-size:clamp(28px,4vw,40px);
+    line-height:1.15;
+    margin:0 0 14px;
+    font-weight:800;
+  }
+  .copy p{
+    font-size:16px;
+    line-height:1.55;
+    margin:0;
+    color:rgba(255,255,255,.88);
+    max-width:440px;
+  }
+  .emoji{font-size:30px;vertical-align:-3px;margin-left:4px;}
+
+  .card-wrap{
+    width:min(440px, 92vw);
+    margin:24px clamp(16px,4vw,64px) 24px 0;
+    flex-shrink:0;
+  }
+  .card{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:0 24px 60px rgba(0,0,0,.35);
+    padding:36px 34px 30px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .brand img.seal{
+    height:44px;width:44px;border-radius:50%;object-fit:cover;
+  }
+  .brand img.wordmark{
+    height:34px;
+  }
+
+  .alert{
+    display:none;
+    border-left:4px solid var(--error-bd);
+    background:var(--error-bg);
+    color:var(--error-tx);
+    font-size:14px;
+    padding:12px 14px;
+    border-radius:6px;
+    margin-bottom:20px;
+  }
+  .alert.show{display:block;}
+  .alert.ok{
+    border-left-color:var(--ok-tx);
+    background:var(--ok-bg);
+    color:var(--ok-tx);
+  }
+
+  label{
+    display:block;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+
+  .field{position:relative;margin-bottom:18px;}
+  .field svg{
+    position:absolute;left:13px;top:50%;transform:translateY(-50%);
+    width:16px;height:16px;color:#8a8f98;
+  }
+  .field input{
+    width:100%;
+    padding:13px 14px 13px 38px;
+    border:1.5px solid var(--border);
+    border-radius:9px;
+    font-size:15px;
+    outline:none;
+    transition:border-color .15s;
+    font-family:inherit;
+  }
+  .field input:focus{border-color:var(--green);}
+  .field.err input{border-color:var(--error-bd);}
+  .field-err-msg{display:none;font-size:12.5px;color:var(--error-tx);margin-top:6px;}
+  .field.err .field-err-msg{display:block;}
+
+  .toggle-eye{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;color:#8a8f98;padding:4px;display:flex;
+    align-items:center;justify-content:center;
+    z-index:2;
+  }
+  /* reset posisi svg di dalam tombol mata, supaya tidak kena aturan .field svg di atas */
+  .toggle-eye svg{
+    position:static;
+    width:19px;height:19px;
+    color:inherit;
+    transform:none;
+  }
+
+  .row-between{
+    display:flex;align-items:center;justify-content:space-between;
+    margin:-4px 0 22px;font-size:13.5px;
+  }
+  .remember{display:flex;align-items:center;gap:8px;color:var(--muted);}
+  .remember input{width:15px;height:15px;accent-color:var(--green);}
+  a.link{color:var(--green);font-weight:600;text-decoration:none;font-size:13.5px;}
+  a.link:hover{text-decoration:underline;}
+
+  button.submit{
+    width:100%;
+    background:var(--green);
+    color:#fff;border:none;border-radius:9px;
+    padding:14px 16px;font-size:15.5px;font-weight:700;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .15s;font-family:inherit;
+  }
+  button.submit:hover{background:var(--green-dark);}
+  button.submit:disabled{opacity:.6;cursor:not-allowed;}
+
+  .hint{
+    margin-top:18px;
+    font-size:12.5px;
+    color:#9aa0a8;
+    text-align:center;
+    line-height:1.6;
+  }
+
+  .step{display:none;}
+  .step.active{display:block;}
+
+  .forgot-intro{
+    font-size:14.5px;
+    line-height:1.6;
+    color:#4b5056;
+    margin:0 0 22px;
+  }
+  .steps-title{
+    font-size:15px;
+    font-weight:700;
+    margin:0 0 14px;
+  }
+  .steps-list{
+    list-style:none;
+    margin:0 0 20px;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .steps-list li{
+    display:flex;
+    gap:12px;
+    font-size:14px;
+    line-height:1.5;
+    color:#3a3f45;
+  }
+  .steps-list .num{
+    flex-shrink:0;
+    width:24px;height:24px;
+    border-radius:50%;
+    background:var(--ok-bg);
+    color:var(--green);
+    font-size:12.5px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .no-email-note{
+    font-size:13.5px;
+    color:var(--muted);
+    line-height:1.55;
+    margin:0 0 22px;
+    padding-top:18px;
+    border-top:1px solid var(--border);
+  }
+  .foot-note{
+    text-align:center;
+    margin-top:20px;
+    font-size:13.5px;
+    color:var(--muted);
+  }
+
+  @media (max-width: 860px){
+    .layout{flex-direction:column;align-items:stretch;}
+    .copy{padding:40px 22px 16px;max-width:none;}
+    .card-wrap{width:auto;margin:0 16px 32px;}
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="bg"></div>
+    <div class="layout">
+
+      <div class="copy">
+        <h1 id="copyHeadline">Halo Sobat USU <span class="emoji">👋</span></h1>
+        <p id="copySub">Dengan SATU USU kamu dapat mengakses banyak sistem yang tersedia pada Universitas Sumatera Utara hanya dengan satu akun.</p>
+      </div>
+
+      <div class="card-wrap">
+        <div class="card">
+
+          <div class="brand">
+            <img class="seal" src="images/Logo-usu.jpeg" alt="Lambang USU">
+            <img class="wordmark" src="images/Logo-satu.jpeg" alt="SATU">
+          </div>
+
+          <div class="alert" id="alertBox"></div>
+
+          <!-- STEP: LOGIN -->
+          <form class="step active" id="stepLogin" novalidate>
+
+            <label for="usernameInput">Identitas (NIP/NIM/Email USU)</label>
+            <div class="field" id="usernameField">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="usernameInput" autocomplete="username" placeholder="Masukkan NIP, NIM, atau email" required>
+              <div class="field-err-msg" id="usernameErrMsg">NIM/username salah.</div>
+            </div>
+
+            <label for="passwordInput">Password</label>
+            <div class="field" id="passwordField">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <input type="password" id="passwordInput" autocomplete="current-password" placeholder="Masukkan Password" required style="padding-right:42px;">
+              <button type="button" class="toggle-eye" id="eyeToggle" aria-label="Tampilkan password">
+                <svg id="eyeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3.2"/></svg>
+              </button>
+              <div class="field-err-msg" id="passwordErrMsg">Password salah.</div>
+            </div>
+
+            <div class="row-between">
+              <label class="remember"><input type="checkbox" id="rememberBox"> Ingat saya</label>
+              <a class="link" href="#" id="forgotLink">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="submit" id="submitBtn">
+              <span id="submitLabel">Sign In</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+
+            <p class="hint" id="demoHint"></p>
+          </form>
+
+          <!-- STEP: FORGOT PASSWORD -->
+          <form class="step" id="stepForgot" novalidate>
+            <p class="forgot-intro">Setelah Anda mengirim permintaan, kami akan mengirim email berisi tautan reset password. Buka email tersebut, lalu ikuti langkah-langkahnya untuk membuat password baru.</p>
+
+            <p class="steps-title">Langkah selanjutnya</p>
+            <ul class="steps-list">
+              <li><span class="num">1</span><span>Kirim identitas (email atau username) Anda di form ini</span></li>
+              <li><span class="num">2</span><span>Cek inbox email Anda — kami akan mengirim tautan reset password</span></li>
+              <li><span class="num">3</span><span>Buka email tersebut dan ikuti langkah-langkahnya untuk membuat password baru</span></li>
+            </ul>
+
+            <p class="no-email-note">Tidak menerima email? Periksa folder spam atau junk, lalu tunggu beberapa menit.</p>
+
+            <label for="forgotInput">Identitas (NIP/NIM/Email USU)</label>
+            <div class="field" id="forgotField">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="forgotInput" placeholder="Masukkan NIP, NIM, atau email">
+            </div>
+
+            <button type="submit" class="submit">
+              Submit
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+
+            <p class="foot-note">Ingat password Anda? <a class="link" href="#" id="backToLoginLink">Kembali ke login</a></p>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+(function(){
+
+  /* ======================================================================
+     KONFIGURASI API LOGIN ASLI
+     ----------------------------------------------------------------------
+     Ganti URL di bawah ini dengan endpoint login backend Anda yang
+     sesungguhnya. Endpoint diharapkan menerima POST JSON:
+       { "username": "...", "password": "..." }
+     dan membalas salah satu dari:
+       200 OK  -> { "success": true,  "name": "Nama User" }
+       401     -> { "success": false, "error": "invalid_username" }
+                  { "success": false, "error": "invalid_password" }
+                  { "success": false, "error": "invalid_both" }
+     Sesuaikan nama field / struktur respons ini dengan API Anda.
+     Endpoint untuk "forgot password" (opsional) diatur di API_FORGOT_URL.
+  ========================================================================= */
+  var API_LOGIN_URL  = "https://api.contoh-usu.ac.id/auth/login";          // TODO: ganti dengan URL API login asli Anda
+  var API_FORGOT_URL = "https://api.contoh-usu.ac.id/auth/forgot-password"; // TODO: ganti dengan URL API reset password asli Anda
+  var USE_REAL_API   = false; // set true setelah kedua URL di atas aktif
+
+  /* ======================================================================
+     MODE DEMO LOKAL — "AKUN YANG SEDANG AKTIF" DI LOCALSTORAGE
+     ----------------------------------------------------------------------
+     Perilaku yang dipakai:
+     1. Belum ada akun tersimpan -> apa pun yang pertama kali diketik
+        (NIM/email/NIP + password) langsung disimpan sebagai akun aktif
+        dan dianggap berhasil login.
+     2. NIM & password yang diketik SAMA PERSIS dengan yang tersimpan
+        -> berhasil login.
+     3. Hanya SALAH SATU (NIM saja atau password saja) yang beda dari
+        yang tersimpan -> dianggap salah ketik pada field itu saja,
+        diminta input ulang HANYA field yang salah, field yang lain
+        tetap dipertahankan.
+     4. NIM DAN password KEDUANYA beda dari yang tersimpan -> dianggap
+        pengguna sengaja mau pakai akun baru, kombinasi baru ini
+        langsung disimpan menggantikan akun aktif sebelumnya, dan
+        langsung dianggap berhasil login.
+  ========================================================================= */
+  var STORAGE_KEY = "satu_usu_active_account";
+
+  function getSavedAccount(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function saveAccount(username, password){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ username: username, password: password }));
+    }catch(e){ /* localStorage tidak tersedia, abaikan */ }
+  }
+
+  var stepLogin  = document.getElementById('stepLogin');
+  var stepForgot = document.getElementById('stepForgot');
+
+  var copyHeadline  = document.getElementById('copyHeadline');
+  var copySub       = document.getElementById('copySub');
+  var form           = document.getElementById('stepLogin');
+  var usernameInput  = document.getElementById('usernameInput');
+  var passwordInput  = document.getElementById('passwordInput');
+  var usernameField  = document.getElementById('usernameField');
+  var passwordField  = document.getElementById('passwordField');
+  var alertBox       = document.getElementById('alertBox');
+  var submitBtn       = document.getElementById('submitBtn');
+  var submitLabel     = document.getElementById('submitLabel');
+  var demoHint        = document.getElementById('demoHint');
+
+  var HEADLINES = {
+    login:  ["Halo Sobat USU <span class='emoji'>👋</span>", "Dengan SATU USU kamu dapat mengakses banyak sistem yang tersedia pada Universitas Sumatera Utara hanya dengan satu akun."],
+    forgot: ["Lupa Password? <span class='emoji'>🔑</span>", "Tidak masalah! Masukkan email atau username Anda, lalu ikuti langkah di form untuk mereset password."]
+  };
+
+  function showStep(name){
+    stepLogin.classList.toggle('active', name === 'login');
+    stepForgot.classList.toggle('active', name === 'forgot');
+    hideAlert();
+    var h = HEADLINES[name];
+    copyHeadline.innerHTML = h[0];
+    copySub.textContent = h[1];
+  }
+
+  function refreshHint(){
+    if (USE_REAL_API){
+      demoHint.textContent = "Terhubung ke API login asli.";
+      return;
+    }
+    var acc = getSavedAccount();
+    if (acc){
+      demoHint.textContent = "Mode demo lokal — akun aktif saat ini: " + acc.username;
+    } else {
+      demoHint.textContent = "Mode demo lokal — login pertama kali akan disimpan sebagai akun Anda.";
+    }
+  }
+  refreshHint();
+
+  function showAlert(msg, ok){
+    alertBox.textContent = msg;
+    alertBox.classList.add('show');
+    alertBox.classList.toggle('ok', !!ok);
+  }
+  function hideAlert(){
+    alertBox.classList.remove('show');
+    alertBox.classList.remove('ok');
+  }
+  function setFieldError(fieldEl, on){
+    fieldEl.classList.toggle('err', !!on);
+  }
+  function clearFieldErrors(){
+    setFieldError(usernameField, false);
+    setFieldError(passwordField, false);
+  }
+  function setLoading(on){
+    submitBtn.disabled = on;
+    submitLabel.textContent = on ? "Memproses..." : "Sign In";
+  }
+
+  document.getElementById('eyeToggle').addEventListener('click', function(){
+    var showing = passwordInput.type === 'text';
+    passwordInput.type = showing ? 'password' : 'text';
+    this.setAttribute('aria-label', showing ? 'Tampilkan password' : 'Sembunyikan password');
+  });
+
+  /* ---- Navigasi ke/dari halaman Forgot Password ---- */
+  document.getElementById('forgotLink').addEventListener('click', function(e){
+    e.preventDefault();
+    document.getElementById('forgotInput').value = usernameInput.value.trim();
+    showStep('forgot');
+  });
+  document.getElementById('backToLoginLink').addEventListener('click', function(e){
+    e.preventDefault();
+    showStep('login');
+  });
+
+  /* ---- Validasi hasil login terhadap 3 kasus yang diminta ---- */
+  function handleResult(usernameOK, passwordOK, successName, typedUsername){
+    clearFieldErrors();
+
+    if (usernameOK && passwordOK){
+      showAlert('Login berhasil! Selamat datang, ' + (successName || typedUsername) + '.', true);
+      return;
+    }
+
+    if (!usernameOK){
+      // Kasus 1: hanya username salah -> minta input ulang username saja
+      setFieldError(usernameField, true);
+      showAlert('Username/NIM salah. Silakan masukkan ulang.');
+      usernameInput.value = '';
+      usernameInput.focus();
+    } else {
+      // Kasus 2: hanya password salah -> minta input ulang password saja
+      setFieldError(passwordField, true);
+      showAlert('Password salah. Silakan masukkan ulang.');
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  }
+
+  /* ---- Mode API asli: login ---- */
+  function loginViaApi(username, password){
+    return fetch(API_LOGIN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username, password: password })
+    })
+    .then(function(res){ return res.json().then(function(data){ return { status: res.status, data: data }; }); })
+    .then(function(result){
+      var data = result.data;
+      if (result.status === 200 && data.success){
+        handleResult(true, true, data.name, username);
+      } else {
+        var err = data.error || "invalid_both";
+        handleResult(err !== "invalid_username" && err !== "invalid_both", err !== "invalid_password" && err !== "invalid_both", null, username);
+      }
+    });
+  }
+
+  /* ---- Mode API asli: forgot password ---- */
+  function forgotViaApi(identity){
+    return fetch(API_FORGOT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identity: identity })
+    }).then(function(res){ return res.json(); });
+  }
+
+  /* ---- Mode demo lokal: cek terhadap akun aktif yang tersimpan ---- */
+  function loginViaLocalDemo(username, password){
+    var acc = getSavedAccount();
+
+    if (!acc){
+      // Belum ada akun tersimpan sama sekali -> input ini jadi akun pertama
+      saveAccount(username, password);
+      refreshHint();
+      handleResult(true, true, username, username);
+      return;
+    }
+
+    var usernameMatches = username === acc.username;
+    var passwordMatches = password === acc.password;
+
+    if (usernameMatches && passwordMatches){
+      handleResult(true, true, acc.username, username);
+      return;
+    }
+
+    if (!usernameMatches && !passwordMatches){
+      // NIM dan password DUA-DUANYA beda dari yang tersimpan
+      // -> dianggap mau pakai akun baru, simpan & gantikan akun aktif
+      saveAccount(username, password);
+      refreshHint();
+      showAlert('Akun baru terdeteksi dan disimpan sebagai akun aktif. Selamat datang, ' + username + '.', true);
+      return;
+    }
+
+    // Hanya salah satu yang beda -> itulah yang diminta diinput ulang
+    handleResult(usernameMatches, passwordMatches, acc.username, username);
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    hideAlert();
+    clearFieldErrors();
+
+    var typedUsername = usernameInput.value.trim();
+    var typedPassword = passwordInput.value;
+
+    if (!typedUsername || !typedPassword){
+      if (!typedUsername) setFieldError(usernameField, true);
+      if (!typedPassword) setFieldError(passwordField, true);
+      showAlert('Silakan isi NIM/username dan password.');
+      return;
+    }
+
+    if (USE_REAL_API){
+      setLoading(true);
+      loginViaApi(typedUsername, typedPassword)
+        .catch(function(err){
+          console.error('Gagal menghubungi API login, memakai mode demo lokal sebagai fallback.', err);
+          loginViaLocalDemo(typedUsername, typedPassword);
+        })
+        .finally(function(){ setLoading(false); });
+    } else {
+      loginViaLocalDemo(typedUsername, typedPassword);
+    }
+  });
+
+  /* ---- Submit form Forgot Password ---- */
+  stepForgot.addEventListener('submit', function(e){
+    e.preventDefault();
+    var identity = document.getElementById('forgotInput').value.trim();
+    var field = document.getElementById('forgotField');
+    field.classList.remove('err');
+
+    if (!identity){
+      field.classList.add('err');
+      showAlert('Silakan masukkan NIP, NIM, atau email Anda.');
+      return;
+    }
+
+    if (USE_REAL_API){
+      forgotViaApi(identity)
+        .then(function(){
+          showAlert('Jika akun ditemukan, tautan reset password telah dikirim ke email Anda.', true);
+        })
+        .catch(function(err){
+          console.error('Gagal menghubungi API forgot-password.', err);
+          showAlert('Terjadi kesalahan saat mengirim permintaan. Silakan coba lagi.');
+        });
+    } else {
+      // Mode demo: cukup simulasikan pengiriman email, tanpa mengirim email sungguhan
+      showAlert('Jika akun ditemukan, tautan reset password telah dikirim ke email Anda. (Simulasi — tidak ada email sungguhan yang dikirim.)', true);
+    }
+  });
+
+  showStep('login');
+
+})();
+</script>
+</body>
+</html>
