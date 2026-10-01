@@ -23,20 +23,20 @@ public class LoginChecker {
         boolean passwordMatches = password.equals(savedAccount.password);
 
         if (usernameMatches && passwordMatches) {
-            // berhasil login
+            // Berhasil login
             System.out.println("Login berhasil! Selamat datang, " + username);
 
         } else if (!usernameMatches && !passwordMatches) {
-            // keduanya beda -> simpan sebagai akun baru, langsung masuk
+            // Keduanya beda -> simpan sebagai akun baru, langsung masuk
             saveAccount(username, password);
             System.out.println("Akun baru disimpan dan langsung login: " + username);
 
         } else if (!usernameMatches) {
-            // hanya username yang beda
+            // Hanya username yang beda
             System.out.println("Username salah. Silakan masukkan ulang.");
 
         } else {
-            // hanya password yang beda
+            // Hanya password yang beda
             System.out.println("Password salah. Silakan masukkan ulang.");
         }
     }
